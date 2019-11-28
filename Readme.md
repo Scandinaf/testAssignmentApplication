@@ -4,7 +4,7 @@ Glad to introduce you the first of its kind(sarcasm) plugin to perform test assi
 
 
 ### Project Structure
-![IdeaPlugin](resources/IdeaPlugin.png)
+![IdeaPlugin](resources/ideaPlugin.png)
 
 
 ### Quick Start
