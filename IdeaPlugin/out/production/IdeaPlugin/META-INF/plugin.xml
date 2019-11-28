@@ -1,0 +1,35 @@
+<idea-plugin>
+    <id>com.eg.plugin.test_assignment</id>
+    <name>Test Assignments EG</name>
+    <version>1.0</version>
+    <vendor email="sergeyqwertyborovskiy@gmail.com" url="https://www.evolutiongaming.com">Evolution Gaming
+    </vendor>
+
+    <description>
+        A small plugin that will allow you to perform exciting test assignments.
+    </description>
+
+    <idea-version since-build="192.0"/>
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+    <depends optional="false">org.intellij.scala</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <preloadingActivity
+            implementation="com.eg.plugin.preloading.PluginInitializer"/>
+    </extensions>
+
+    <actions>
+        <group id="MyPlugin.TestAssignment" text="Test Assignment" description="Test Assignment">
+            <add-to-group group-id="MainMenu" anchor="last"/>
+            <action id="MyPlugin.ProjectImport" class="com.eg.plugin.action.ProjectImporter"
+                    text="Import Project" description="Import project"/>
+            <action id="MyPlugin.ProjectReinitialization" class="com.eg.plugin.action.ProjectReinitializer"
+                    text="Project Reinitialization" description="Reinitialization of the project"/>
+            <action id="MyPlugin.SubmitProject" class="com.eg.plugin.action.SubmitProject"
+                    text="Submit Project" description="Submit project"/>
+            <action id="MyPlugin.ShowAssignmentCheckResult" class="com.eg.plugin.action.ShowAssignmentCheckResult"
+                    text="Show Result" description="Show Result"/>
+        </group>
+    </actions>
+</idea-plugin>
