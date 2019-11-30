@@ -1,9 +1,10 @@
 package com.eg.plugin.util
 
-import java.io.{File, IOException}
+import java.io.{File, IOException, InputStream}
+import java.nio.file.{Path, Paths}
 
 import cats.implicits._
-import com.intellij.openapi.vfs.{LocalFileSystem, VfsUtil, VirtualFile}
+import com.intellij.openapi.vfs.{VfsUtil, VirtualFile}
 
 object FileSystemHelper {
 
@@ -41,11 +42,11 @@ object FileSystemHelper {
     destination: VirtualFile
   ): Either[IOException, Unit] =
     (directory.exists(), directory.isDirectory, destination.exists(), destination.isDirectory) match {
-      case (true, true, true, true) => directory.getChildren
-        .foreach(f =>
-          FileSystemHelper.copyFile(f, f.getName, destination)
-        ).asRight
-      case (v1, v2, v3, v4)         =>
+      case (true, true, true, true) =>
+        val destinationPath = Paths.get(destination.getPath)
+        directory.getChildren.foreach(copy(_, destinationPath)).asRight
+
+      case (v1, v2, v3, v4) =>
         new IOException(
           s"""An error occurred while trying to copy.
              |Directory(exists - $v1; isDirectory - $v2; path - ${ directory.getPath }),
@@ -59,8 +60,31 @@ object FileSystemHelper {
   def getVirtualFileFromResources(path: String): Option[VirtualFile] =
     Option(getClass.getResource(path)).map(VfsUtil.findFileByURL(_))
 
-  private def copyFile(file: VirtualFile, newName: String, destination: VirtualFile): Unit =
-    file.copy(None, destination, newName)
+  private def copy(file: VirtualFile, path: Path): Unit =
+    if (file.isDirectory)
+      copyDirectory(file, path)
+    else
+      copyFile(file, path)
+
+  private def copyDirectory(initDirectory: VirtualFile, destination: Path): Unit = {
+    val newDestination = destination.resolve(initDirectory.getName)
+    new File(newDestination.toUri).mkdir()
+    initDirectory.getChildren.foreach(copy(_, newDestination))
+  }
+
+  private def copyFile(initFile: VirtualFile, destination: Path): Unit = {
+    val file = new File(destination.resolve(initFile.getName).toUri)
+    file.createNewFile()
+    inputStreamToFile(initFile.getInputStream, file)
+  }
+
+  private def inputStreamToFile(is: InputStream, file: File): Unit = {
+    val fos = new java.io.FileOutputStream(file)
+    fos.write(
+      Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
+    )
+    fos.close()
+  }
 
   private def getFile(path: String): Option[File] =
     new File(path).some.collect {
@@ -68,9 +92,7 @@ object FileSystemHelper {
     }
 
   private def getVirtualFileByFile(file: File): VirtualFile =
-    LocalFileSystem
-      .getInstance()
-      .findFileByIoFile(file)
+    VfsUtil.findFileByIoFile(file, true)
 
   private def getUniqueFolderName(
     directory: VirtualFile,

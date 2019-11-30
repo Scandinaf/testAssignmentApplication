@@ -58,7 +58,7 @@ class ProjectImporter extends AnAction with AssignmentStubHelper {
       (virtualFiles.asScala.toList.headOption match {
         case Some(vf) =>
           inWriteAction {
-            vf.refresh(false, false)
+            vf.getFileSystem.refresh(false)
             for {
               folder <- FileSystemHelper.createUniqueDirectory(vf, projectName)
               _ <- copyAssignmentStubToDirectory(path, folder)
