@@ -7,6 +7,7 @@ import com.eg.plugin.action.ui.ChooseProjectDialog
 import com.eg.plugin.config.PluginConfiguration
 import com.eg.plugin.exception.FileNotChosenException
 import com.eg.plugin.util.{AssignmentNamingHelper, FileSystemHelper, PropertyHelper}
+import com.intellij.diagnostic.{LogMessage, MessagePool}
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
 import com.intellij.openapi.fileChooser.{FileChooserDescriptorFactory, FileChooserFactory}
 import com.intellij.openapi.project.Project
@@ -57,6 +58,7 @@ class ProjectImporter extends AnAction with AssignmentStubHelper {
       (virtualFiles.asScala.toList.headOption match {
         case Some(vf) =>
           inWriteAction {
+            vf.refresh(false, false)
             for {
               folder <- FileSystemHelper.createUniqueDirectory(vf, projectName)
               _ <- copyAssignmentStubToDirectory(path, folder)
@@ -67,7 +69,18 @@ class ProjectImporter extends AnAction with AssignmentStubHelper {
             """It's an unexpected situation.
               |Somehow managed not to choose any files in the dialog.""".stripMargin
           ).asLeft
-      }).leftMap(throw _)
+      }).recover {
+        case ex =>
+          MessagePool
+            .getInstance()
+            .addIdeFatalMessage(
+              LogMessage.createEvent(
+                ex,
+                """No one's perfect, there's been an internal mistake.
+                  |You should probably disable the plugin and let us know about incident.""".stripMargin
+              )
+            )
+      }
 
   protected def openImportProject(
     virtualFile: VirtualFile,

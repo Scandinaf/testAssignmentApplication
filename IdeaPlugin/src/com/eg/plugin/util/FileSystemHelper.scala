@@ -3,7 +3,7 @@ package com.eg.plugin.util
 import java.io.{File, IOException}
 
 import cats.implicits._
-import com.intellij.openapi.vfs.{LocalFileSystem, VirtualFile}
+import com.intellij.openapi.vfs.{LocalFileSystem, VfsUtil, VirtualFile}
 
 object FileSystemHelper {
 
@@ -57,14 +57,10 @@ object FileSystemHelper {
     getFile(path).map(getVirtualFileByFile(_))
 
   def getVirtualFileFromResources(path: String): Option[VirtualFile] =
-    getResourceFile(path).map(getVirtualFileByFile(_))
+    Option(getClass.getResource(path)).map(VfsUtil.findFileByURL(_))
 
   private def copyFile(file: VirtualFile, newName: String, destination: VirtualFile): Unit =
     file.copy(None, destination, newName)
-
-  private def getResourceFile(path: String): Option[File] =
-    Option(getClass.getResource(path))
-      .map(r => new File(r.getPath))
 
   private def getFile(path: String): Option[File] =
     new File(path).some.collect {

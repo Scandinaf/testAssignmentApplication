@@ -96,7 +96,7 @@ object SubmitExecutor extends AssignmentStubHelper {
       projectFolder <- FileSystemHelper.getVirtualFile(project.getBasePath)
       jarFileFolder <- projectFolder.getChildren.find(_.getName.equals(jarFolderName))
       jarFile <- {
-        jarFileFolder.getFileSystem.refresh(false)
+        jarFileFolder.refresh(false, false)
         jarFileFolder.getChildren.find(children =>
           Option(children.getExtension)
             .map(_.equals(jarExtension))

@@ -5,6 +5,7 @@ import java.io.FileNotFoundException
 import cats.implicits._
 import com.eg.plugin.config.PluginConfiguration
 import com.eg.plugin.util.{FileSystemHelper, PropertyHelper}
+import com.intellij.diagnostic.{LogMessage, MessagePool}
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
@@ -39,7 +40,18 @@ class ProjectReinitializer extends AnAction with AssignmentStubHelper {
         case None => new FileNotFoundException(
           s"An error occurred when trying to read the project."
         ).asLeft
-      }).leftMap(throw _)
+      }).recover {
+        case ex =>
+          MessagePool
+            .getInstance()
+            .addIdeFatalMessage(
+              LogMessage.createEvent(
+                ex,
+                """No one's perfect, there's been an internal mistake.
+                  |You should probably disable the plugin and let us know about incident.""".stripMargin
+              )
+            )
+      }
 
   protected def isActionApprovedByUser(project: Project): Boolean =
     Messages.showOkCancelDialog(
