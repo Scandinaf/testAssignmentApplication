@@ -21,6 +21,12 @@ trait TestSuite[T] extends LazyLogging {
             |test because there is no implementation.
             |Check your code and send the task again.""".stripMargin.some
       )
+      case _: NoClassDefFoundError                         => TestResult.apply(
+        isPassed = false,
+        hint =
+          """Unfortunately, we couldn't find some dependencies.
+            |Please check your sbt file for "provided" directives.""".stripMargin.some
+      )
       case ex                                              =>
         logger.error("An unforeseen situation has arisen within the framework of the annex.", ex)
         throw ex
