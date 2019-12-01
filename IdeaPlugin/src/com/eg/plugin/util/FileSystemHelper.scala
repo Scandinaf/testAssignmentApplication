@@ -6,7 +6,7 @@ import java.nio.file.{Path, Paths}
 import cats.implicits._
 import com.intellij.openapi.vfs.{VfsUtil, VirtualFile}
 
-object FileSystemHelper {
+object FileSystemHelper extends TryWithResources {
 
   def createDirectory(
     initDirectory: VirtualFile,
@@ -89,16 +89,13 @@ object FileSystemHelper {
   private def copyFile(initFile: VirtualFile, destination: Path): Unit = {
     val file = new File(destination.resolve(initFile.getName).toUri)
     file.createNewFile()
-    inputStreamToFile(initFile.getInputStream, file)
+    withResources(initFile.getInputStream())(is => inputStreamToFile(is, file))
   }
 
-  private def inputStreamToFile(is: InputStream, file: File): Unit = {
-    val fos = new java.io.FileOutputStream(file)
-    fos.write(
-      Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray
-    )
-    fos.close()
-  }
+  private def inputStreamToFile(is: InputStream, file: File): Unit =
+    withResources(
+      new java.io.FileOutputStream(file)
+    )(t => t.write(Stream.continually(is.read()).takeWhile(_ != -1).map(_.toByte).toArray))
 
   private def getFile(path: String): Option[File] =
     new File(path).some.collect {

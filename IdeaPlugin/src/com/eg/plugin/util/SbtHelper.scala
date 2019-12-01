@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile
 
 import scala.io.Source
 
-object SbtHelper {
+object SbtHelper extends TryWithResources {
 
   private val sbtFileName = "build.sbt"
 
@@ -20,14 +20,16 @@ object SbtHelper {
     rootFolder.getFileSystem.refresh(false)
     Option(rootFolder.findChild(sbtFileName)) match {
       case Some(sbtFile) =>
-        val writer = new PrintWriter(sbtFile.getOutputStream(None))
-        val newConfig = Source
-          .fromInputStream(sbtFile.getInputStream)
-          .getLines()
-          .mkString(lineSeparator)
-          .replaceAll(initialValue, replaceValue)
-        writer.write(newConfig)
-        writer.close().asRight
+        withResources(
+          new PrintWriter(sbtFile.getOutputStream(None))
+        )(writer => {
+          val newConfig = Source
+            .fromInputStream(sbtFile.getInputStream)
+            .getLines()
+            .mkString(lineSeparator)
+            .replaceAll(initialValue, replaceValue)
+          writer.write(newConfig)
+          }.asRight)
       case None          =>
         new FileNotFoundException(
           s"Unfortunately, the build.sbt file is missing."
