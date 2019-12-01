@@ -8,22 +8,19 @@ import com.intellij.openapi.vfs.{VfsUtil, VirtualFile}
 
 object FileSystemHelper {
 
-  def createUniqueDirectory(
+  def createDirectory(
     initDirectory: VirtualFile,
     folderName: String
   ): Either[IOException, VirtualFile] =
-    if (initDirectory.exists() && initDirectory.isDirectory)
-      initDirectory.createChildDirectory(
-        None,
-        getUniqueFolderName(initDirectory, folderName)
-      ).asRight
-    else
-      new IOException(
-        s"""An error occurred while trying to create directory.
-           |Directory(exists - ${ initDirectory.exists() };
-           |isDirectory - ${ initDirectory.isDirectory };
-           |path - ${ initDirectory.getPath })""".stripMargin
-      ).asLeft
+    createDirectory(initDirectory, () => folderName)
+
+  def createUniqueDirectory(
+    initDirectory: VirtualFile,
+    folderName: String
+  ): Either[IOException, VirtualFile] = {
+    initDirectory.getFileSystem.refresh(false)
+    createDirectory(initDirectory, () => getUniqueFolderName(initDirectory, folderName))
+  }
 
   def clearDirectory(directory: VirtualFile, excludeFiles: Seq[String] = Seq.empty): Either[IOException, Unit] =
     (directory.exists(), directory.isDirectory) match {
@@ -65,6 +62,23 @@ object FileSystemHelper {
       copyDirectory(file, path)
     else
       copyFile(file, path)
+
+  private def createDirectory(
+    initDirectory: VirtualFile,
+    getFolderName: () => String
+  ): Either[IOException, VirtualFile] =
+    if (initDirectory.exists() && initDirectory.isDirectory)
+      initDirectory.createChildDirectory(
+        None,
+        getFolderName()
+      ).asRight
+    else
+      new IOException(
+        s"""An error occurred while trying to create directory.
+           |Directory(exists - ${ initDirectory.exists() };
+           |isDirectory - ${ initDirectory.isDirectory };
+           |path - ${ initDirectory.getPath })""".stripMargin
+      ).asLeft
 
   private def copyDirectory(initDirectory: VirtualFile, destination: Path): Unit = {
     val newDestination = destination.resolve(initDirectory.getName)

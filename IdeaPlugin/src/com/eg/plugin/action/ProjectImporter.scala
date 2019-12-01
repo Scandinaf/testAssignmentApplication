@@ -6,7 +6,7 @@ import cats.implicits._
 import com.eg.plugin.action.ui.ChooseProjectDialog
 import com.eg.plugin.config.PluginConfiguration
 import com.eg.plugin.exception.FileNotChosenException
-import com.eg.plugin.util.{AssignmentNamingHelper, FileSystemHelper, PropertyHelper}
+import com.eg.plugin.util.{AssignmentNamingHelper, FileSystemHelper, PropertyHelper, SbtHelper}
 import com.intellij.diagnostic.{LogMessage, MessagePool}
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
 import com.intellij.openapi.fileChooser.{FileChooserDescriptorFactory, FileChooserFactory}
@@ -58,12 +58,12 @@ class ProjectImporter extends AnAction with AssignmentStubHelper {
       (virtualFiles.asScala.toList.headOption match {
         case Some(vf) =>
           inWriteAction {
-            vf.getFileSystem.refresh(false)
             for {
               folder <- FileSystemHelper.createUniqueDirectory(vf, projectName)
               _ <- copyAssignmentStubToDirectory(path, folder)
+              _ <- SbtHelper.changeSbtSetting(folder, "\\$projectName", folder.getName)
             } yield folder
-          }.map(folder => openImportProject(folder, projectName))
+          }.map(openImportProject(_, projectName))
         case None     =>
           new FileNotChosenException(
             """It's an unexpected situation.
@@ -88,7 +88,7 @@ class ProjectImporter extends AnAction with AssignmentStubHelper {
   ): Unit =
     PropertyHelper.setProperty(
       PlatformProjectOpenProcessor.getInstance()
-        .doOpenProject(virtualFile, null, false),
+        .doOpenProject(virtualFile, null, true),
       PluginConfiguration.Properties.projectName,
       projectName
     )
