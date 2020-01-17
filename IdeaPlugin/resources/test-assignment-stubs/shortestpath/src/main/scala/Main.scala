@@ -1,5 +1,5 @@
 import cats.implicits._
-import com.eg.assignment.{Edge, ShortestPath, Vertex}
+import com.eg.assignment._
 
 class ShortestPathSolution extends ShortestPath {
   /** Find the shortest path from start to end vertices.
@@ -42,6 +42,4 @@ class ShortestPathSolution extends ShortestPath {
       sys.error("Path could not be found")
     }
   }
-
-  implicit val vertexEq: cats.Eq[Vertex] = cats.Eq.fromUniversalEquals
 }
