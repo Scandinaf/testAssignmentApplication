@@ -1,3 +1,4 @@
+import cats.implicits._
 import com.eg.assignment.{Edge, ShortestPath, Vertex}
 
 class ShortestPathSolution extends ShortestPath {
@@ -17,19 +18,20 @@ class ShortestPathSolution extends ShortestPath {
     // and it may not work for all test cases.
 
     def fullPath(path: List[Vertex]): Boolean =
-      (path.head == end) && (path.last == start)
+      (path.head === end) && (path.last === start)
 
     def visit(remainingEdges: Set[Edge], visited: List[Vertex]): Option[List[Vertex]] = {
       if (fullPath(visited)) {
         Some(visited) // we have found a path
       } else {
-        val current = visited.head
-        val outgoingEdges = remainingEdges filter (_.from == current)
-        val solutions = outgoingEdges.view map { candidate =>
-          visit(remainingEdges - candidate, candidate.to :: visited)
-        }
-        solutions collectFirst {
-          case Some(solution) => solution
+        visited.headOption.flatMap { current =>
+          val outgoingEdges = remainingEdges filter (_.from === current)
+          val solutions = outgoingEdges.view map { candidate =>
+            visit(remainingEdges - candidate, candidate.to :: visited)
+          }
+          solutions collectFirst {
+            case Some(solution) => solution
+          }
         }
       }
     }
@@ -40,4 +42,6 @@ class ShortestPathSolution extends ShortestPath {
       sys.error("Path could not be found")
     }
   }
+
+  implicit val vertexEq: cats.Eq[Vertex] = cats.Eq.fromUniversalEquals
 }
