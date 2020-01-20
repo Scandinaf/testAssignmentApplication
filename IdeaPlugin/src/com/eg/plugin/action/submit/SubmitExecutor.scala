@@ -24,7 +24,7 @@ import scala.concurrent.Future
 object SubmitExecutor extends AssignmentStubHelper {
   private val jarExtension = "jar"
   private val jarFolderName = "target"
-  private val sbtCommand = ";project root;reload;assembly"
+  private val sbtCommand = ";project root;reload;compile;scalafix;assembly"
 
   def submitAssignment(project: Project, userInformation: UserInformation): Unit =
     (for {
