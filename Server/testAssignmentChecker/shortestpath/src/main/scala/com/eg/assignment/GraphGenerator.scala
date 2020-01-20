@@ -12,7 +12,7 @@ object GraphGenerator {
 
   private def allEdgePairs(vertexCount: Int): Set[(Vertex, Vertex)] = {
     val vertices = createVertices(vertexCount)
-    allVertexPairsFromVertices(vertices)
+    Graph.allVertexPairsFromVertices(vertices)
   }
 
   /** https://en.wikipedia.org/wiki/Erdős–Rényi_model */

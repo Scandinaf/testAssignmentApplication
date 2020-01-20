@@ -1,6 +1,6 @@
-package com.eg
+package com.eg.assignment
 
-package object assignment {
+object Graph {
   def allVertices(graph: Set[Edge]): Set[Vertex] = {
     graph.map(_.from) ++ graph.map(_.to)
   }

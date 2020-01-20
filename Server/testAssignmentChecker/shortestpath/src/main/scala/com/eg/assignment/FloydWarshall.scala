@@ -7,7 +7,7 @@ object FloydWarshall {
   def findCosts(graph: Set[Edge]): Map[(Vertex, Vertex), Double] = {
     val map = mutable.Map[(Vertex, Vertex), Double]()
 
-    allVertexPairs(graph) foreach { x =>
+    Graph.allVertexPairs(graph) foreach { x =>
       map(x) = Double.PositiveInfinity // let dist be a |V| × |V| array of minimum distances initialized to ∞ (infinity)
     }
 
@@ -15,7 +15,7 @@ object FloydWarshall {
       map((edge.from, edge.to)) = edge.cost // dist[u][v] ← w(u,v)  // the weight of the edge (u,v)
     }
 
-    val vertices = allVertices(graph)
+    val vertices = Graph.allVertices(graph)
     vertices foreach { vertex => // for each vertex v
       map((vertex, vertex)) = 0 // dist[v][v] ← 0
     }
