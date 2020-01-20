@@ -18,7 +18,7 @@ class ShortestPathSolution extends ShortestPath {
     // and it may not work for all test cases.
 
     def fullPath(path: List[Vertex]): Boolean =
-      (path.head === end) && (path.last === start)
+      path.headOption.contains(end) && path.lastOption.contains(start)
 
     def visit(remainingEdges: Set[Edge], visited: List[Vertex]): Option[List[Vertex]] = {
       if (fullPath(visited)) {
