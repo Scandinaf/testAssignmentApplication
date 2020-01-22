@@ -1,0 +1,24 @@
+@(project: String, attempts: Seq[AssignmentAttempt])
+@main("Leaderboard") {
+  <h1>Leaderboard of @project</h1>
+  <table class="table table-hover">
+    <thead class="thead-light">
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">User</th>
+        <th scope="col">Score</th>
+        <th scope="col">Submitted at</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(ai <- attempts.zipWithIndex) {
+      <tr>
+        <th scope="row">@ai._2</th>
+        <td>@ai._1.user.nickname</td>
+        <td>@ai._1.result.resultScore.map(_.toString).getOrElse("-")</td>
+        <td>@ai._1.dateTime</td>
+      </tr>
+    }
+    </tbody>
+  </table>
+}
