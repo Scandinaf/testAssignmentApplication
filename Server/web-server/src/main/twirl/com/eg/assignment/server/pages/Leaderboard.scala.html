@@ -13,7 +13,7 @@
     <tbody>
     @for(ai <- attempts.zipWithIndex) {
       <tr>
-        <th scope="row">@ai._2</th>
+        <th scope="row">@{ai._2 + 1}</th>
         <td>@ai._1.user.nickname</td>
         <td>@ai._1.result.resultScore.map(_.toString).getOrElse("-")</td>
         <td>@ai._1.dateTime</td>
