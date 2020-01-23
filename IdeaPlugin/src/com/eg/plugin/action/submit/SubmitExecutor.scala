@@ -24,11 +24,14 @@ import scala.concurrent.Future
 object SubmitExecutor extends AssignmentStubHelper {
   private val jarExtension = "jar"
   private val jarFolderName = "target"
-  private val sbtCommand = ";project root;reload;compile;scalafix;assembly"
 
-  def submitAssignment(project: Project, userInformation: UserInformation): Unit =
+  def submitAssignment(
+                        project: Project,
+                        userInformation: UserInformation,
+                        sbtExecuteCommand: String
+                      ): Unit =
     (for {
-      _ <- executeCommand(project, sbtCommand)
+      _ <- executeCommand(project, sbtExecuteCommand)
       assignment <- EitherT.fromEither[Future](buildAssignment(project, userInformation))
       assignmentCheckResult <- EitherT.fromEither[Future](AssignmentHttpResource.post(assignment))
     } yield updateProjectPropertyAndNotify(project, assignmentCheckResult))
@@ -48,9 +51,9 @@ object SubmitExecutor extends AssignmentStubHelper {
       })
 
   protected def updateProjectPropertyAndNotify(
-    project: Project,
-    result: AssignmentCheckResult
-  ): Unit = {
+                                                project: Project,
+                                                result: AssignmentCheckResult
+                                              ): Unit = {
     PropertyHelper
       .setProperty(
         project,
@@ -61,9 +64,9 @@ object SubmitExecutor extends AssignmentStubHelper {
   }
 
   protected def executeCommand(
-    project: Project,
-    command: String
-  ): EitherT[Future, SbtCommandFailureException, String] =
+                                project: Project,
+                                command: String
+                              ): EitherT[Future, SbtCommandFailureException, String] =
     EitherT(SbtShellCommunication
       .forProject(project)
       .command(command).map(output =>
@@ -74,9 +77,9 @@ object SubmitExecutor extends AssignmentStubHelper {
     ))
 
   protected def buildAssignment(
-    project: Project,
-    userInformation: UserInformation
-  ): Either[Exception, Assignment] =
+                                 project: Project,
+                                 userInformation: UserInformation
+                               ): Either[Exception, Assignment] =
     for {
       jarFile <- tryToFindJar(project)
       projectName <- getProjectNameProperty(project)
@@ -90,8 +93,8 @@ object SubmitExecutor extends AssignmentStubHelper {
     )
 
   protected def tryToFindJar(
-    project: Project
-  ): Either[FileNotFoundException, VirtualFile] =
+                              project: Project
+                            ): Either[FileNotFoundException, VirtualFile] =
     (for {
       projectFolder <- FileSystemHelper.getVirtualFile(project.getBasePath)
       jarFileFolder <- projectFolder.getChildren.find(_.getName.equals(jarFolderName))
