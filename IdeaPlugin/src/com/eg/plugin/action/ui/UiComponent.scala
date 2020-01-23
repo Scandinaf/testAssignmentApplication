@@ -21,8 +21,8 @@ trait UiComponent {
   }
 
   protected def createTextArea(
-    text: Option[String] = None
-  ): JTextArea = {
+                                text: Option[String] = None
+                              ): JTextArea = {
     val textArea = new JTextArea(5, 0)
     textArea.setBorder(Borders.empty(5))
     textArea.setEnabled(false)
@@ -33,10 +33,10 @@ trait UiComponent {
   }
 
   protected def createScrollPane(
-    component: Component,
-    width: Int,
-    height: Int
-  ): JScrollPane = {
+                                  component: Component,
+                                  width: Int,
+                                  height: Int
+                                ): JScrollPane = {
     val scrollPane = new JScrollPane(component)
     scrollPane.setBackground(FlatWelcomeFrame.getProjectsBackground())
     val size = JBUI.size(width, height)
@@ -51,13 +51,13 @@ trait UiComponent {
   }
 
   protected def createTreeSpeedSearch(
-    tree: JTree
-  ): TreeSpeedSearch =
+                                       tree: JTree
+                                     ): TreeSpeedSearch =
     new TreeSpeedSearch(tree)
 
   protected def createListSpeedSearch[E](
-    list: JBList[E]
-  ): ListSpeedSearch[E] =
+                                          list: JBList[E]
+                                        ): ListSpeedSearch[E] =
     new ListSpeedSearch(list)
 
   protected def createTree(rootNode: TreeNode, cellRenderer: TreeCellRenderer): JTree = {

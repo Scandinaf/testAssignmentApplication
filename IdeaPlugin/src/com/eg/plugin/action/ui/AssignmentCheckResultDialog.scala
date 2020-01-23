@@ -1,7 +1,7 @@
 package com.eg.plugin.action.ui
 
 import java.awt.{BorderLayout, Component}
-
+import cats.syntax.option._
 import com.eg.assignment.common.model.result.{AssignmentCheckResult, TestResult, TestSuiteResult}
 import com.eg.plugin.action.ui.AssignmentCheckResultDialog.{Icons, Message, Size}
 import com.intellij.openapi.project.Project
@@ -14,9 +14,9 @@ import javax.swing.event.{TreeSelectionEvent, TreeSelectionListener}
 import javax.swing.tree._
 
 class AssignmentCheckResultDialog(
-  assignmentCheckResult: AssignmentCheckResult,
-  project: Project
-) extends DialogWrapper(project, false)
+                                   assignmentCheckResult: AssignmentCheckResult,
+                                   project: Project
+                                 ) extends DialogWrapper(project, false)
   with UiComponent {
   init()
 
@@ -29,20 +29,25 @@ class AssignmentCheckResultDialog(
     val rootPanel = new JPanel(new BorderLayout(JBUIScale.scale(5), 0))
     rootPanel.setPreferredSize(JBUI.size(Size.Window.width, Size.Window.height))
     rootPanel.add(
-      createAdditionalInformationPanel(
-        assignmentCheckResult.additionalInformation
-      ),
+      createAdditionalInformationPanel(assignmentCheckResult),
       "North"
     )
     rootPanel.add(createTestResultsPanel, "Center")
     rootPanel
   }
 
-  protected def createAdditionalInformationPanel(additionalInformation: Option[String]): JPanel = {
+  protected def createAdditionalInformationPanel(
+                                                  assignmentCheckResult: AssignmentCheckResult
+                                                ): JPanel = {
     val additionalInformationPanel = new JPanel(new BorderLayout(JBUIScale.scale(5), 0))
     additionalInformationPanel.setBorder(Borders.empty(0, 0, 5, 0))
     additionalInformationPanel.add(
-      createScrollPane(createTextArea(additionalInformation),
+      createScrollPane(createTextArea(
+        buildText(
+          resultScore = assignmentCheckResult.resultScore,
+          additionalInformation = assignmentCheckResult.additionalInformation
+        ).some
+      ),
         Size.AdditionalInformationTextArea.width,
         Size.AdditionalInformationTextArea.height),
       "North"
@@ -82,10 +87,10 @@ class AssignmentCheckResultDialog(
   private def createTreeSelectionListener(tree: JTree, textArea: JTextArea): TreeSelectionListener =
     (_: TreeSelectionEvent) => {
       tree.getLastSelectedPathComponent.asInstanceOf[DefaultMutableTreeNode].getUserObject match {
-        case v: TestResult            =>
-          textArea.setText(v.hint.getOrElse(""))
-        case v: TestSuiteResult       =>
-          textArea.setText(v.hint.getOrElse(""))
+        case v: TestResult =>
+          textArea.setText(buildText(v.hint, v.resultScore, v.executionTime))
+        case v: TestSuiteResult =>
+          textArea.setText(buildText(v.hint, v.resultScore))
         case _: AssignmentCheckResult =>
           textArea.setText("")
       }
@@ -94,20 +99,20 @@ class AssignmentCheckResultDialog(
   private def buildTreeCellRenderer: TreeCellRenderer =
     new DefaultTreeCellRenderer() {
       override def getTreeCellRendererComponent(
-        tree: JTree,
-        value: Any,
-        sel: Boolean,
-        expanded: Boolean,
-        leaf: Boolean,
-        row: Int,
-        hasFocus: Boolean
-      ): Component = {
+                                                 tree: JTree,
+                                                 value: Any,
+                                                 sel: Boolean,
+                                                 expanded: Boolean,
+                                                 leaf: Boolean,
+                                                 row: Int,
+                                                 hasFocus: Boolean
+                                               ): Component = {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
         value.asInstanceOf[DefaultMutableTreeNode].getUserObject match {
-          case v: TestResult            =>
+          case v: TestResult =>
             setText(v.name.getOrElse("Regular Test"))
             buildIcon(v.isPassed).foreach(setIcon(_))
-          case v: TestSuiteResult       =>
+          case v: TestSuiteResult =>
             setText(v.name)
             buildIcon(v.isPassed).foreach(setIcon(_))
           case v: AssignmentCheckResult =>
@@ -119,10 +124,40 @@ class AssignmentCheckResultDialog(
     }
 
   private def buildIcon(
-    isPassed: Boolean
-  ): Option[ImageIcon] =
+                         isPassed: Boolean
+                       ): Option[ImageIcon] =
     if (isPassed) Icons.ok
     else Icons.fail
+
+  private def buildText(
+                         hint: Option[String] = None,
+                         resultScore: Option[Int] = None,
+                         executionTime: Option[Long] = None,
+                         additionalInformation: Option[String] = None
+                       ): String =
+    s"""Hint: ${
+      hint.getOrElse(
+        "Unfortunately, we don't know how to help you, but we think you're already doing a great job.:)"
+      )
+    }
+       |
+       |Score: ${
+      resultScore.getOrElse(
+        "We couldn't calculate the number of points you scored, apparently we don't need them to assess your coolness. :)"
+      )
+    }
+       |
+       |Execution Time(ms): ${
+      executionTime.getOrElse(
+        "Unfortunately, our stopwatch broke down, but someday we'll definitely fix it. :)"
+      )
+    }
+       |
+       |Additional Information: ${
+      additionalInformation.getOrElse(
+        "Unfortunately, it's empty. :)"
+      )
+    }""".stripMargin
 }
 
 object AssignmentCheckResultDialog {
@@ -130,6 +165,7 @@ object AssignmentCheckResultDialog {
     new AssignmentCheckResultDialog(result, project)
 
   object Size {
+
     object Window {
       val width = 1000
       val height = 400
@@ -144,6 +180,7 @@ object AssignmentCheckResultDialog {
       val width = 300
       val height = 400
     }
+
   }
 
   object Message {
@@ -156,4 +193,5 @@ object AssignmentCheckResultDialog {
     val fail: Option[ImageIcon] =
       Option(new ImageIcon(getClass.getResource("/icons/delete.png")))
   }
+
 }
