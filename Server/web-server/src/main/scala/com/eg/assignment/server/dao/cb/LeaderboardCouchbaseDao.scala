@@ -26,7 +26,7 @@ class LeaderboardCouchbaseDao private (
     s"""select $bucketName.* from `$bucketName` where
        | projectName = $$projectName and
        | epochSeconds >= $$from and epochSeconds <= $$to
-       | order by result.resultScore
+       | order by result.resultScore desc
        | limit $$limit offset $$offset;""".stripMargin
   private val fetchProjectsStmt =
     s"""select distinct raw $bucketName.projectName from `$bucketName` order by projectName;"""
