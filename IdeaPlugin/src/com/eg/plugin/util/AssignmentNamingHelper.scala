@@ -6,6 +6,11 @@ import com.eg.plugin.model.AssignmentDescription
 object AssignmentNamingHelper {
   val projectNames = Array(
     AssignmentDescription(
+      "calculator",
+      "Calculator",
+      "Simple task to implement the calculator"
+    ),
+    AssignmentDescription(
       "shortestpath",
       "Shortest path",
       """

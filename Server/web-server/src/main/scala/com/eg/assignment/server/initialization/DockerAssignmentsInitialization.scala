@@ -12,6 +12,24 @@ trait DockerAssignmentsInitialization extends ServerInitialization {
   implicit val system: ActorSystem
   implicit val executionContext: ExecutionContextExecutor
   val dockerAssignmentService: Map[String, BaseDockerAssignmentChecker] = Map(
+    "calculator" -> new DockerAssignmentChecker(
+      "calculator_assignment_checker",
+      "result.json",
+      Seq(
+        5 seconds,
+        2 second,
+        2 second,
+        1 second,
+        5 seconds,
+        2 second,
+        2 second,
+        1 second,
+        5 seconds,
+        2 second,
+        2 second,
+        1 second,
+      )
+    ),
     "shortestpath" -> new DockerAssignmentChecker(
       "shortestpath_assignment_checker",
       "result.json",
