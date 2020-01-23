@@ -11,7 +11,7 @@ object AssignmentConfiguration {
         "Calculator",
         "Simple task to implement the calculator"
       ),
-      sbtExecuteCommand = ";project root;reload;compile;assembly"
+      sbtCommand = ";project root;reload;compile;assembly"
     ),
     Configuration(
       description = AssignmentDescription(
@@ -36,7 +36,7 @@ object AssignmentConfiguration {
           |The solution will be graded on test cases with vertex counts up to 100 and edge counts up to 9,900 and the total execution time of 10 test cases of various size constrained to 100 seconds.
       """.stripMargin
       ),
-      sbtExecuteCommand = ";project root;reload;compile;scalafix;assembly"
+      sbtCommand = ";project root;reload;compile;scalafix;assembly"
     )
   )
 

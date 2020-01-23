@@ -36,6 +36,6 @@ class SubmitProject extends AnAction with ProjectComponent {
     } yield SubmitExecutor.submitAssignment(
       anActionEvent.getProject,
       userInfo,
-      assignmentConfiguration.sbtExecuteCommand
+      assignmentConfiguration.sbtCommand
     )
 }

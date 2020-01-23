@@ -28,10 +28,10 @@ object SubmitExecutor extends AssignmentStubHelper {
   def submitAssignment(
                         project: Project,
                         userInformation: UserInformation,
-                        sbtExecuteCommand: String
+                        sbtCommand: String
                       ): Unit =
     (for {
-      _ <- executeCommand(project, sbtExecuteCommand)
+      _ <- executeCommand(project, sbtCommand)
       assignment <- EitherT.fromEither[Future](buildAssignment(project, userInformation))
       assignmentCheckResult <- EitherT.fromEither[Future](AssignmentHttpResource.post(assignment))
     } yield updateProjectPropertyAndNotify(project, assignmentCheckResult))
