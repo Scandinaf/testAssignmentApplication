@@ -29,7 +29,25 @@ trait DockerAssignmentsInitialization extends ServerInitialization {
         2 second,
         1 second,
       )
-    )
+    ),
+    "shortestpath" -> new DockerAssignmentChecker(
+      "shortestpath_assignment_checker",
+      "result.json",
+      Seq(
+        5 seconds,
+        2 second,
+        2 second,
+        1 second,
+        5 seconds,
+        2 second,
+        2 second,
+        1 second,
+        5 seconds,
+        2 second,
+        2 second,
+        1 second,
+      )
+    ),
   )
 
   DockerHelper

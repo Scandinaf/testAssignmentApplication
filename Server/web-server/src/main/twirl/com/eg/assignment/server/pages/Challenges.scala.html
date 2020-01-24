@@ -1,0 +1,9 @@
+@(challenges: Seq[String])
+@main("Challenges") {
+  <h1>Challenges</h1>
+  <ul>
+  @for(challenge <- challenges) {
+    <li><a href="/leaderboard?projectName=@challenge">@challenge</a></li>
+  }
+  </ul>
+}

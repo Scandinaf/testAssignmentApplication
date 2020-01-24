@@ -4,9 +4,9 @@ import java.util
 
 import cats.implicits._
 import com.eg.plugin.action.ui.ChooseProjectDialog
-import com.eg.plugin.config.PluginConfiguration
+import com.eg.plugin.config.{AssignmentConfiguration, PluginConfiguration}
 import com.eg.plugin.exception.FileNotChosenException
-import com.eg.plugin.util.{AssignmentNamingHelper, FileSystemHelper, PropertyHelper, SbtHelper}
+import com.eg.plugin.util.{FileSystemHelper, PropertyHelper, SbtHelper}
 import com.intellij.diagnostic.{LogMessage, MessagePool}
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
 import com.intellij.openapi.fileChooser.{FileChooserDescriptorFactory, FileChooserFactory}
@@ -19,13 +19,11 @@ import org.jetbrains.plugins.scala.extensions.inWriteAction
 import scala.collection.JavaConverters._
 
 class ProjectImporter extends AnAction with AssignmentStubHelper {
-  override def update(anActionEvent: AnActionEvent): Unit =
-    anActionEvent
-      .getPresentation()
-      .setVisible(AssignmentNamingHelper.projectNames.nonEmpty)
 
   override def actionPerformed(anActionEvent: AnActionEvent): Unit =
-    ChooseProjectDialog(AssignmentNamingHelper.projectNames) match {
+    ChooseProjectDialog(
+      AssignmentConfiguration.assignmentsDescription
+    ) match {
       case dialog =>
         if (dialog.showAndGet()) {
           val selectedValue = dialog.getSelectedValue
@@ -38,10 +36,10 @@ class ProjectImporter extends AnAction with AssignmentStubHelper {
     }
 
   protected def showFileChooserDialog(
-    projectName: String,
-    path: String,
-    project: Project
-  ): Unit =
+                                       projectName: String,
+                                       path: String,
+                                       project: Project
+                                     ): Unit =
     FileChooserFactory
       .getInstance()
       .createPathChooser(
@@ -51,9 +49,9 @@ class ProjectImporter extends AnAction with AssignmentStubHelper {
       ).choose(null, getFileChooserConsumer(path, projectName))
 
   protected def getFileChooserConsumer(
-    path: String,
-    projectName: String
-  ): Consumer[_ >: util.List[VirtualFile]] =
+                                        path: String,
+                                        projectName: String
+                                      ): Consumer[_ >: util.List[VirtualFile]] =
     (virtualFiles: util.List[VirtualFile]) =>
       (virtualFiles.asScala.toList.headOption match {
         case Some(vf) =>
@@ -64,7 +62,7 @@ class ProjectImporter extends AnAction with AssignmentStubHelper {
               _ <- SbtHelper.changeSbtSetting(folder, "\\$projectName", folder.getName)
             } yield folder
           }.map(openImportProject(_, projectName))
-        case None     =>
+        case None =>
           new FileNotChosenException(
             """It's an unexpected situation.
               |Somehow managed not to choose any files in the dialog.""".stripMargin
@@ -83,9 +81,9 @@ class ProjectImporter extends AnAction with AssignmentStubHelper {
       }
 
   protected def openImportProject(
-    virtualFile: VirtualFile,
-    projectName: String
-  ): Unit =
+                                   virtualFile: VirtualFile,
+                                   projectName: String
+                                 ): Unit =
     PropertyHelper.setProperty(
       PlatformProjectOpenProcessor.getInstance()
         .doOpenProject(virtualFile, null, true),

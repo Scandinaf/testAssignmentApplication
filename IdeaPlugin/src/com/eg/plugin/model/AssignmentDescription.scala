@@ -1,14 +1,19 @@
 package com.eg.plugin.model
 
 import com.eg.plugin.action.ui.model.ListEntity
-import com.eg.plugin.util.AssignmentNamingHelper.getProjectPath
+import com.eg.plugin.config.AssignmentConfiguration.getProjectPath
 
-case class AssignmentDescription(projectName: String, alias: String, description: String) extends ListEntity {
+case class AssignmentDescription(
+                                  projectName: String,
+                                  alias: String,
+                                  description: String
+                                ) extends ListEntity {
+  private val maxTextSize = 38
+  val path: String = getProjectPath(projectName)
+  override val getHint: String = description
   override val getText: String =
-    if (alias.size > 38)
-      s"${ alias.substring(0, 38) }..."
+    if (alias.size > maxTextSize)
+      s"${alias.substring(0, maxTextSize)}..."
     else
       alias
-  override val getHint: String = description
-  val path: String = getProjectPath(projectName)
 }
