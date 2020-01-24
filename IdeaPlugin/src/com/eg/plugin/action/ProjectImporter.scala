@@ -12,9 +12,9 @@ import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
 import com.intellij.openapi.fileChooser.{FileChooserDescriptorFactory, FileChooserFactory}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.platform.PlatformProjectOpenProcessor
 import com.intellij.util.Consumer
 import org.jetbrains.plugins.scala.extensions.inWriteAction
+import org.jetbrains.sbt.project.SbtProjectOpenProcessor
 
 import scala.collection.JavaConverters._
 
@@ -84,10 +84,19 @@ class ProjectImporter extends AnAction with AssignmentStubHelper {
                                    virtualFile: VirtualFile,
                                    projectName: String
                                  ): Unit =
-    PropertyHelper.setProperty(
-      PlatformProjectOpenProcessor.getInstance()
-        .doOpenProject(virtualFile, null, true),
-      PluginConfiguration.Properties.projectName,
-      projectName
-    )
+    Option(new SbtProjectOpenProcessor()
+      .doOpenProject(
+        virtualFile,
+        null,
+        true
+      )) match {
+      case Some(project) => PropertyHelper.setProperty(
+        project,
+        PluginConfiguration.Properties.projectName,
+        projectName
+      )
+      case None => inWriteAction {
+        virtualFile.delete(None)
+      }
+    }
 }

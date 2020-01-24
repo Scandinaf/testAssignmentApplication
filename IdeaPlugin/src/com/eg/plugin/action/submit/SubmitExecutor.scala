@@ -14,10 +14,9 @@ import com.eg.plugin.exception.SbtCommandFailureException
 import com.eg.plugin.util.{FileSystemHelper, NotificationHelper, PropertyHelper}
 import com.intellij.diagnostic.{LogMessage, MessagePool}
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import io.circe.syntax._
-import org.jetbrains.sbt.shell.{SbtShellCommunication, SbtShellToolWindowFactory}
+import org.jetbrains.sbt.shell.SbtShellCommunication
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -31,16 +30,6 @@ object SubmitExecutor extends AssignmentStubHelper {
                         userInformation: UserInformation,
                         sbtCommand: String
                       ): Unit =
-    if (isSbtShellInitialized(project))
-      trySubmitAssignment(project, userInformation, sbtCommand)
-    else
-      showDialogNotInitializedSbtShellWarning
-
-  protected def trySubmitAssignment(
-                                     project: Project,
-                                     userInformation: UserInformation,
-                                     sbtCommand: String
-                                   ): Unit =
     (for {
       _ <- executeCommand(project, sbtCommand)
       assignment <- EitherT.fromEither[Future](buildAssignment(project, userInformation))
@@ -120,13 +109,4 @@ object SubmitExecutor extends AssignmentStubHelper {
       new FileNotFoundException(
         "Couldn't find the file by the specified path - ./target/*.jar. Could you please check assembly build settings."
       ).asLeft)(_.asRight)
-
-  private def isSbtShellInitialized(project: Project): Boolean =
-    SbtShellToolWindowFactory.instance(project).isDefined
-
-  private def showDialogNotInitializedSbtShellWarning: Unit =
-    Messages.showWarningDialog(
-      "Unfortunately, the IDEA was unable to initialize SBT Shell (it happens the first time you open a project), please re-open the project.",
-      "Slight difficulties"
-    )
 }
